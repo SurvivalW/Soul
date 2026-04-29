@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Soul Setup</title>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+<body style="background: #111; color: white; font-family: Arial; padding: 30px;">
+    <h1>Welcome to Soul!</h1>
+    <p>Enter your username:</p>
+    <input type="text" id="username">
+    <p>Enter the location of the folder that holds all your projects.</p>
+    <input type="text" id="location">
+    <button onclick="sendData()">Continue</button>
+
+    <script>
+        let bridge = null;
+        
+        new QWebChannel(qt.webChannelTransport, function(channel) 
+        {
+            bridge = channel.objects.bridge;
+        });
+
+        function sendData() 
+        {
+            const username = document.getElementById("username").value;
+            const location = document.getElementById("location").value;
+
+            bridge.saveData(username, location);
+        }
+    </script>
+</body>
+</html>

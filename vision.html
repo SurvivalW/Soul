@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Soul</title>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <link rel="stylesheet" href="vision.css">
+</head>
+<body>
+    <h1>Good Morning, <span id="username"></span></h1>
+    <div class="widget"> </div>
+
+    <script>
+        let bridge = null;
+        
+        new QWebChannel(qt.webChannelTransport, function(channel)
+        {
+            bridge = channel.objects.bridge;
+
+            bridge.getUsername(function(username)
+            {
+                document.getElementById("username").innerText = username;
+            });
+
+            bridge.getTotalLines(function(total)
+            {
+                document.getElementById("totalLines").innerText = total;
+            });
+
+            bridge.getPythonLines(function(py) 
+            {
+                document.getElementById("pythonLines").innerText = py;
+            });
+
+            bridge.getJavaLines(function(java) 
+            {
+                document.getElementById("javaLines").innerText = java;
+            });
+        });
+    </script>
+</body>
+</html>
