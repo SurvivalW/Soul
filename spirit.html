@@ -97,12 +97,14 @@
         .python { background-color: #22c55e; }
         .java    { background-color: #f59e0b; }
         .asm     { background-color: #8b5cf6; }
-        .javascript { background-color: #4eb8ff}
+        .javascript { background-color: #4eb8ff; }
+        .typescript { background-color: #ff0000; }
 
         .python-text { color: #22c55e; }
         .java-text { color: #f59e0b; }
         .asm-text { color: #8b5cf6; }
         .javascript-text { color: #4eb8ff; }
+        .typescript-text { color: #ff0000; }
 
         .progress-bar {
             height: 8px;
@@ -179,6 +181,14 @@
                 </div>
             </div>
 
+            <div class="card stat">
+                <div class="label">TypeScript</div>
+                <div class="stat-value typescript-text" id="typescriptLines">0</div>
+                <div class="progress-bar">
+                    <div class="progress typescript" id="typescriptBar" style="width: 0%"></div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -207,6 +217,7 @@
                 updateBar('javaBar', parseInt(document.getElementById("javaLines").innerText) || 0);
                 updateBar('asmBar', parseInt(document.getElementById("assemblyLines").innerText) || 0);
                 updateBar('javascriptBar', parseInt(document.getElementById("javascriptLines").innerText) || 0);
+                updateBar('typescriptBar', parseInt(document.getElementById("typescriptLines").innerText) || 0);
             });
 
             bridge.getPythonLines(function(py) {
@@ -227,6 +238,11 @@
             bridge.getJavaScriptLines(function(javascript) {
                 document.getElementById("javascriptLines").innerText = javascript.toLocaleString();
                 updateBar('javascriptBar', javascript)
+            });
+
+            bridge.getTypeScriptLines(function(typescript) {
+                document.getElementById("typescriptLines").innerText = typescript.toLocaleString();
+                updateBar('typescriptBar', typescript)
             });
         });
 
