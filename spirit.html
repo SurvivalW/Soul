@@ -94,10 +94,15 @@
             margin-bottom: 8px;
         }
 
-        .python { color: #22c55e; }
-        .java    { color: #f59e0b; }
-        .asm     { color: #8b5cf6; }
-        .javascript { color: #4eb8ff}
+        .python { background-color: #22c55e; }
+        .java    { background-color: #f59e0b; }
+        .asm     { background-color: #8b5cf6; }
+        .javascript { background-color: #4eb8ff}
+
+        .python-text { color: #22c55e; }
+        .java-text { color: #f59e0b; }
+        .asm-text { color: #8b5cf6; }
+        .javascript-text { color: #4eb8ff; }
 
         .progress-bar {
             height: 8px;
@@ -144,7 +149,7 @@
 
             <div class="card stat">
                 <div class="label">Python</div>
-                <div class="stat-value python" id="pythonLines">0</div>
+                <div class="stat-value python-text" id="pythonLines">0</div>
                 <div class="progress-bar">
                     <div class="progress python" id="pythonBar" style="width: 0%"></div>
                 </div>
@@ -152,7 +157,7 @@
 
             <div class="card stat">
                 <div class="label">Java</div>
-                <div class="stat-value java" id="javaLines">0</div>
+                <div class="stat-value java-text" id="javaLines">0</div>
                 <div class="progress-bar">
                     <div class="progress java" id="javaBar" style="width: 0%"></div>
                 </div>
@@ -160,7 +165,7 @@
 
             <div class="card stat">
                 <div class="label">Assembly</div>
-                <div class="stat-value asm" id="assemblyLines">0</div>
+                <div class="stat-value asm-text" id="assemblyLines">0</div>
                 <div class="progress-bar">
                     <div class="progress asm" id="asmBar" style="width: 0%"></div>
                 </div>
@@ -168,7 +173,7 @@
 
             <div class="card stat">
                 <div class="label">JavaScript</div>
-                <div class="stat-value javascript" id="javascriptLines">0</div>
+                <div class="stat-value javascript-text" id="javascriptLines">0</div>
                 <div class="progress-bar">
                     <div class="progress javascript" id="javascriptBar" style="width: 0%"></div>
                 </div>
@@ -184,6 +189,7 @@
 
     <script>
         let bridge = null;
+        let totalLines = 0;
 
         new QWebChannel(qt.webChannelTransport, function(channel) {
             bridge = channel.objects.bridge;
@@ -194,7 +200,13 @@
             });
 
             bridge.getTotalLines(function(total) {
+                totalLines = total;
                 document.getElementById("totalLines").innerText = total.toLocaleString();
+
+                updateBar('pythonBar', parseInt(document.getElementById("pythonLines").innerText) || 0);
+                updateBar('javaBar', parseInt(document.getElementById("javaLines").innerText) || 0);
+                updateBar('asmBar', parseInt(document.getElementById("assemblyLines").innerText) || 0);
+                updateBar('javascriptBar', parseInt(document.getElementById("javascriptLines").innerText) || 0);
             });
 
             bridge.getPythonLines(function(py) {
@@ -219,9 +231,13 @@
         });
 
         function updateBar(barId, value) {
-            const total = parseInt(document.getElementById("totalLines").innerText.replace(/[^0-9]/g, '')) || 1;
-            const percentage = Math.min(100, Math.max(0, (value / total) * 100));
-            document.getElementById(barId).style.width = percentage + "%";
+            if (totalLines <= 0) return;
+
+            const percentage = Math.min(100, Math.max(0, (value / totalLines) * 100));
+            const bar = document.getElementById(barId);
+            if (bar) {
+                bar.style.width = percentage + '%';
+            }
         }
     </script>
 </body>
