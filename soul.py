@@ -112,6 +112,7 @@ class Soul(QMainWindow):
         self.move(x, y)
 
         self.view = QWebEngineView()
+
         html_path = (Path(__file__).parent / "spirit.html").resolve().as_uri()
         self.view.setUrl(html_path)
 
