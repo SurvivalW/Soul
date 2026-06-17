@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soul</title>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #16161f;
+            --accent: #22c55e;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            color: var(--accent);
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .big-card {
+            grid-column: span 3;
+            text-align: center;
+            padding: 40px 28px;
+        }
+
+        .total {
+            font-size: 72px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 12px 0;
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .python { color: #22c55e; }
+        .java    { color: #f59e0b; }
+        .asm     { color: #8b5cf6; }
+        .javascript { color: #4eb8ff}
+
+        .progress-bar {
+            height: 8px;
+            background: #334155;
+            border-radius: 9999px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            border-radius: 9999px;
+        }
+
+        .footer {
+            margin-top: 32px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">SOUL</div>
+        <div class="user">
+            <span id="username">Loading...</span>
+            <div style="width:32px;height:32px;background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;">👤</div>
+        </div>
+    </div>
+
+    <div class="main">
+
+        <!-- Total Lines -->
+        <div class="card big-card">
+            <div class="label">Total Lines of Code</div>
+            <div class="total" id="totalLines">0</div>
+            <div class="label">ACROSS ALL PROJECTS</div>
+        </div>
+
+        <!-- Language Stats -->
+        <div class="stat-grid">
+
+            <div class="card stat">
+                <div class="label">Python</div>
+                <div class="stat-value python" id="pythonLines">0</div>
+                <div class="progress-bar">
+                    <div class="progress python" id="pythonBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="card stat">
+                <div class="label">Java</div>
+                <div class="stat-value java" id="javaLines">0</div>
+                <div class="progress-bar">
+                    <div class="progress java" id="javaBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="card stat">
+                <div class="label">Assembly</div>
+                <div class="stat-value asm" id="assemblyLines">0</div>
+                <div class="progress-bar">
+                    <div class="progress asm" id="asmBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="card stat">
+                <div class="label">JavaScript</div>
+                <div class="stat-value javascript" id="javascriptLines">0</div>
+                <div class="progress-bar">
+                    <div class="progress javascript" id="javascriptBar" style="width: 0%"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Soul — Know your code.
+    </div>
+
+    <script>
+        let bridge = null;
+
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+            bridge = channel.objects.bridge;
+
+            // Fetch all data
+            bridge.getUsername(function(username) {
+                document.getElementById("username").innerText = username;
+            });
+
+            bridge.getTotalLines(function(total) {
+                document.getElementById("totalLines").innerText = total.toLocaleString();
+            });
+
+            bridge.getPythonLines(function(py) {
+                document.getElementById("pythonLines").innerText = py.toLocaleString();
+                updateBar('pythonBar', py);
+            });
+
+            bridge.getJavaLines(function(java) {
+                document.getElementById("javaLines").innerText = java.toLocaleString();
+                updateBar('javaBar', java);
+            });
+
+            bridge.getAssemblyLines(function(asm) {
+                document.getElementById("assemblyLines").innerText = asm.toLocaleString();
+                updateBar('asmBar', asm);
+            });
+
+            bridge.getJavaScriptLines(function(javascript) {
+                document.getElementById("javascriptLines").innerText = javascript.toLocaleString();
+                updateBar('javascriptBar', javascript)
+            });
+        });
+
+        function updateBar(barId, value) {
+            const total = parseInt(document.getElementById("totalLines").innerText.replace(/[^0-9]/g, '')) || 1;
+            const percentage = Math.min(100, Math.max(0, (value / total) * 100));
+            document.getElementById(barId).style.width = percentage + "%";
+        }
+    </script>
+</body>
+</html>

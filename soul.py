@@ -53,6 +53,10 @@ class MainBridge(QObject):
     @Slot(result=int)
     def getAssemblyLines(self):
         return Soul.AssemblyLines
+    
+    @Slot(result=int)
+    def getJavaScriptLines(self):
+        return Soul.JavaScriptLines
 
 
 
@@ -86,6 +90,7 @@ class Soul(QMainWindow):
     PythonLines = 0
     JavaLines = 0
     AssemblyLines = 0
+    JavaScriptLines = 0
 
     TotalLines = 0
 
@@ -107,7 +112,7 @@ class Soul(QMainWindow):
         self.move(x, y)
 
         self.view = QWebEngineView()
-        html_path = (Path(__file__).parent / "vision.html").resolve().as_uri()
+        html_path = (Path(__file__).parent / "spirit.html").resolve().as_uri()
         self.view.setUrl(html_path)
 
         # --- Bridge ---
@@ -120,13 +125,6 @@ class Soul(QMainWindow):
         
         location = json.loads(CACHE_FILE.read_text(encoding="utf-8")).get("Location", "")
         self.CalcStats(location)
-
-        print("\n\n===== Stats =====")
-        print("Assembly Lines: ", Soul.AssemblyLines)
-        print("Python Lines: ", Soul.PythonLines)
-        print("Java Lines: ", Soul.JavaLines)
-        print("=================")
-        print("Total Lines: ", Soul.TotalLines)
 
 
     def CalcStats(self, location):
@@ -161,7 +159,7 @@ class Soul(QMainWindow):
                 self.read(item)
 
     def read(self, path: Path):
-        if path.suffix == ".py":            # Python
+        if path.suffix in {".py", ".pyw"}:            # Python
             print("Reading Python file: ", path)
             lines = self.count_code_lines(path, 1)
             Soul.PythonLines += lines
@@ -173,10 +171,16 @@ class Soul(QMainWindow):
             Soul.JavaLines += lines
             Soul.TotalLines += lines
             print("Added ", lines, " lines from ", path)
-        elif path.suffix in {".asm", ".s"}:         # Assembly
+        elif path.suffix in {".asm", ".s", ".S"}:         # Assembly
             print("Reading Assembly file: ", path)
             lines = self.count_code_lines(path, 3)
             Soul.AssemblyLines += lines
+            Soul.TotalLines += lines
+            print("Added ", lines, " lines from ", path)
+        elif path.suffix in {".js", ".jsx", ".mjs"}:
+            print("Reading JavaScript file: ", path)
+            lines = self.count_code_lines(path, 4)
+            Soul.JavaScriptLines += lines
             Soul.TotalLines += lines
             print("Added ", lines, " lines from ", path)
 
@@ -216,6 +220,22 @@ class Soul(QMainWindow):
                 )
             except:
                 return 0
+            
+        if type == 4:   # JavaScript
+            try:
+                return sum(
+                    1
+                    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines()
+                    if (
+                        (s := line.strip()) 
+                        and not s.startswith("//")
+                        and not s.startswith("/*")
+                        and not s.startswith("*")
+                        and not s.startswith("*/")
+                    )
+                )
+            except:
+                return 0
 
 #========Run App======================
 def run_soul():
@@ -225,7 +245,6 @@ def run_soul():
         setup = Setup()
         result = setup.exec()
 
-        # if setup was killed, quit
         if result == 0:
             print("Setup aborted.")
             return
