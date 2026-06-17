@@ -57,6 +57,10 @@ class MainBridge(QObject):
     @Slot(result=int)
     def getJavaScriptLines(self):
         return Soul.JavaScriptLines
+    
+    @Slot(result=int)
+    def getTypeScriptLines(self):
+        return Soul.TypeScriptLines
 
 
 
@@ -91,6 +95,7 @@ class Soul(QMainWindow):
     JavaLines = 0
     AssemblyLines = 0
     JavaScriptLines = 0
+    TypeScriptLines = 0
 
     TotalLines = 0
 
@@ -184,6 +189,12 @@ class Soul(QMainWindow):
             Soul.JavaScriptLines += lines
             Soul.TotalLines += lines
             print("Added ", lines, " lines from ", path)
+        elif path.suffix in {".ts", ".tsx"}:
+            print("Reading TypeScript file: ", path)
+            lines = self.count_code_lines(path, 5)
+            Soul.TypeScriptLines += lines
+            Soul.TotalLines += lines
+            print("Added ", lines, " lines from ", path)
 
     def count_code_lines(self, path: Path, type) -> int:
         if type == 1:  # Python
@@ -223,6 +234,22 @@ class Soul(QMainWindow):
                 return 0
             
         if type == 4:   # JavaScript
+            try:
+                return sum(
+                    1
+                    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines()
+                    if (
+                        (s := line.strip()) 
+                        and not s.startswith("//")
+                        and not s.startswith("/*")
+                        and not s.startswith("*")
+                        and not s.startswith("*/")
+                    )
+                )
+            except:
+                return 0
+            
+        if type == 5:   # TypeScript
             try:
                 return sum(
                     1
