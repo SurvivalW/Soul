@@ -119,6 +119,21 @@ class ManageFoldersBridge(QObject):
             json.dumps(data, indent=2),
             encoding="utf-8"
         )
+
+        try:
+            cache_data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            locations = cache_data.get("Locations", [])
+        except:
+            locations = []
+
+        for loc in locations:
+            Soul.CalcStats(Soul(), loc)
+
+        self.soul = Soul()
+        self.soul.view.page().loadFinished.connect(
+            lambda ok: self.soul.view.page().runJavaScript("update()")
+        )
+
         self.dialog.accept()
 
 

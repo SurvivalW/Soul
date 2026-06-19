@@ -287,15 +287,6 @@
             });
         });
 
-        function updateAllBars()
-        {
-            updateBar('pythonBar', parseInt(document.getElementById("pythonLines").innerText) || 0);
-            updateBar('javaBar', parseInt(document.getElementById("javaLines").innerText) || 0);
-            updateBar('asmBar', parseInt(document.getElementById("assemblyLines").innerText) || 0);
-            updateBar('javascriptBar', parseInt(document.getElementById("javascriptLines").innerText) || 0);
-            updateBar('typescriptBar', parseInt(document.getElementById("typescriptLines").innerText) || 0);
-        }
-
         function updateBar(barId, value) 
         {
             if (totalLines <= 0) return;
@@ -314,6 +305,17 @@
             {
                 bridge.manageFoldersPopUp();
             }
+        }
+
+
+        function update()
+        {
+            bridge.getPythonLines();
+            bridge.getJavaLines();
+            bridge.getAssemblyLines();
+            bridge.getJavaScriptLines();
+            bridge.getTypeScriptLines();
+            bridge.getTotalLines();
         }
     </script>
 </body>
