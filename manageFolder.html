@@ -2,7 +2,7 @@
 <html>
 <head>
     <style>
-        .continueBTN {
+        .doneBTN {
             position: fixed;
             bottom: 30px;
             right: 30px;
@@ -10,36 +10,38 @@
         }
     </style>
 
-    <title>Soul Setup</title>
+    <title>Manage Folders</title>
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 </head>
 <body style="background: #111; color: white; font-family: Arial; padding: 30px;">
-    <h1>Welcome to Soul!</h1>
-    <p>Enter your username:</p>
-    <input type="text" id="username">
-
-    <p>Add your project folders.</p>
+    <p>Add or remove your project folders.</p>
     <button id="addFolderBtn" style="padding:10px 20px; font-size:16px; background:#22c55e; color:black; border:none; border-radius:8px; cursor:pointer;">
         + Add Folder
     </button>
 
     <ul id="FolderList" class="folder-list"></ul>
 
-    <div class="continueBTN">
-        <button onclick="sendData()" style="padding: 10px 20px; font-size: 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            Continue
+    <div class="doneBTN">
+        <button onclick="closeAndUpdate()" style="padding: 10px 20px; font-size: 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Done
         </button>
     </div>
 
     <script>
         let bridge = null;
         let locations = [];
-        
+
         new QWebChannel(qt.webChannelTransport, function(channel) 
         {
             bridge = channel.objects.bridge;
-        });
 
+            bridge.getLocations(function(locationsJson)
+            {
+                locations = JSON.parse(locationsJson);
+                RenderFolderList();
+            })
+        });
+        
         document.getElementById('addFolderBtn').addEventListener('click', function() 
         {
             if (bridge) 
@@ -54,7 +56,6 @@
                 });
             }
         });
-
 
         function RenderFolderList()
         {
@@ -78,23 +79,15 @@
             RenderFolderList();
         }
 
-
-        function sendData() 
+        function closeAndUpdate() 
         {
-            const username = document.getElementById("username").value;
-            if (!username)
-            {
-                alert("Please enter a username.");
-                return;
-            }
-
             if (locations.length === 0) 
             {
                 alert("Please add at least one folder.");
                 return;
             }
 
-            bridge.saveData(username, JSON.stringify(locations));
+            bridge.saveData(JSON.stringify(locations));
         }
     </script>
 </body>
