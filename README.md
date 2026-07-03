@@ -28,8 +28,8 @@ python soul.py
 
 ## Project Structure
 
-```text
-project-name/
+```
+Soul/
 │
 ├── .gitignore
 ├── requirements.txt
