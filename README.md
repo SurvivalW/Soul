@@ -36,6 +36,7 @@ Soul/
 ├── README.md
 ├── soul.py
 ├── setup.html
+├── manageFolder.html
 └── spirit.html
 ```
 

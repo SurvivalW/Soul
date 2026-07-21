@@ -11,6 +11,7 @@ from PySide6.QtWebChannel import QWebChannel
 
 CACHE_FILE = Path(__file__).with_name(".soul_cache.json")
 
+main_window = None
 
 #========SetupBRIDGE==========================
 class SetupBridge(QObject):
@@ -19,15 +20,37 @@ class SetupBridge(QObject):
         self.dialog = dialog
 
     @Slot(str, str)
-    def saveData(self, username, location):
+    def saveData(self, username, locations_json):
+        try:
+            locations = json.loads(locations_json)
+        except:
+            locations = []
+            
         data = {
             "Username": username,
-            "Location": location
+            "Locations": locations
         }
         CACHE_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
-        print("Data saved to cache.")
+        print("Data saved to cache. Folders:", locations)
         self.dialog.accept()
+
+
+
+    @Slot(result=str)
+    def chooseFolder(self):
+        from PySide6.QtWidgets import QFileDialog
+        
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.FileMode.Directory)
+        dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        
+        if dialog.exec():
+            selected = dialog.selectedFiles()
+            if selected:
+                return selected[0]
+        return ""
+
 
 
 #========MainBridge==========================
@@ -61,6 +84,71 @@ class MainBridge(QObject):
     @Slot(result=int)
     def getTypeScriptLines(self):
         return Soul.TypeScriptLines
+    
+
+    @Slot()
+    def manageFoldersPopUp(self):
+        self.manageFolders = ManageFolders()
+        self.manageFolders.show()
+
+
+#===========ManageFoldersBridge==========================
+class ManageFoldersBridge(QObject):
+    def __init__(self, dialog):
+        super().__init__()
+        self.dialog = dialog
+
+    @Slot(result=str)
+    def getLocations(self):
+        try:
+            data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            return json.dumps(data.get("Locations", []))
+        except:
+            return "[]"
+        
+
+    @Slot(str)
+    def saveData(self, locations_json):
+        try:
+            locations = json.loads(locations_json)
+        except:
+            locations = []
+
+        data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+        data["Locations"] = locations
+        CACHE_FILE.write_text(
+            json.dumps(data, indent=2),
+            encoding="utf-8"
+        )
+
+        try:
+            cache_data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            locations = cache_data.get("Locations", [])
+        except:
+            locations = []
+
+        global main_window
+
+        if main_window is not None:
+            main_window.refresh()
+
+        self.dialog.accept()
+
+
+
+    @Slot(result=str)
+    def chooseFolder(self):
+        from PySide6.QtWidgets import QFileDialog
+        
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.FileMode.Directory)
+        dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+        
+        if dialog.exec():
+            selected = dialog.selectedFiles()
+            if selected:
+                return selected[0]
+        return ""
 
 
 
@@ -68,7 +156,7 @@ class MainBridge(QObject):
 class Setup(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Soul (setup)")
+        self.setWindowTitle("Soul - Setup")
         self.resize(900, 600)
 
         layout = QVBoxLayout()
@@ -85,7 +173,6 @@ class Setup(QDialog):
 
         layout.addWidget(self.view)
         self.setLayout(layout)
-
 
 
 
@@ -129,8 +216,14 @@ class Soul(QMainWindow):
 
         self.setCentralWidget(self.view)
         
-        location = json.loads(CACHE_FILE.read_text(encoding="utf-8")).get("Location", "")
-        self.CalcStats(location)
+        try:
+            cache_data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            locations = cache_data.get("Locations", [])
+        except:
+            locations = []
+
+        for loc in locations:
+            self.CalcStats(loc)
 
 
     def CalcStats(self, location):
@@ -163,6 +256,25 @@ class Soul(QMainWindow):
             elif item.is_file():
                 print("Found file: ", item)
                 self.read(item)
+
+    def refresh(self):
+        Soul.PythonLines = 0
+        Soul.JavaLines = 0
+        Soul.AssemblyLines = 0
+        Soul.JavaScriptLines = 0
+        Soul.TypeScriptLines = 0
+        Soul.TotalLines = 0
+
+        try:
+            cache_data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            locations = cache_data.get("Locations", [])
+        except:
+            locations = []
+
+        for loc in locations:
+            self.CalcStats(loc)
+
+        self.view.page().runJavaScript("update()")
 
     def read(self, path: Path):
         if path.suffix in {".py", ".pyw"}:            # Python
@@ -265,6 +377,27 @@ class Soul(QMainWindow):
             except:
                 return 0
 
+class ManageFolders(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Soul - Manage Folders")
+        self.resize(900, 600)
+
+        layout = QVBoxLayout()
+        self.view = QWebEngineView()
+
+        # --- Bridge ---
+        self.channel = QWebChannel()
+        self.bridge = ManageFoldersBridge(self)
+        self.channel.registerObject("bridge", self.bridge)
+        self.view.page().setWebChannel(self.channel)
+
+        html_file = Path(__file__).with_name("manageFolder.html").resolve().as_uri()
+        self.view.setUrl(html_file)
+
+        layout.addWidget(self.view)
+        self.setLayout(layout)
+
 #========Run App======================
 def run_soul():
     app = QApplication(sys.argv)
@@ -274,11 +407,12 @@ def run_soul():
         result = setup.exec()
 
         if result == 0:
-            print("Setup aborted.")
             return
         
-    win = Soul()
-    win.show()
+    global main_window
+
+    main_window = Soul()
+    main_window.show()
 
 
     app.exec()

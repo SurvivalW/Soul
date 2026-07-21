@@ -6,7 +6,16 @@
     <title>Soul</title>
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
     <style>
-        :root {
+        .ManageFoldersBTN 
+        {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+        }
+
+        :root 
+        {
             --bg: #0a0a0f;
             --card: #16161f;
             --accent: #22c55e;
@@ -15,7 +24,8 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        body 
+        {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
@@ -24,71 +34,82 @@
             overflow: hidden;
         }
 
-        .header {
+        .header 
+        {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 32px;
         }
 
-        .logo {
+        .logo 
+        {
             font-size: 36px;
             font-weight: 800;
             letter-spacing: -2px;
             color: var(--accent);
         }
 
-        .user {
+        .user 
+        {
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 15px;
         }
 
-        .main {
+        .main 
+        {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 24px;
         }
 
-        .card {
+        .card 
+        {
             background: var(--card);
             border-radius: 20px;
             padding: 28px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        .big-card {
+        .big-card 
+        {
             grid-column: span 3;
             text-align: center;
             padding: 40px 28px;
         }
 
-        .total {
+        .total 
+        {
             font-size: 72px;
             font-weight: 700;
             color: var(--accent);
             margin: 12px 0;
         }
 
-        .label {
+        .label 
+        {
             color: var(--muted);
             font-size: 15px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .stat-grid {
+        .stat-grid 
+        {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 24px;
         }
 
-        .stat {
+        .stat 
+        {
             text-align: center;
         }
 
-        .stat-value {
+        .stat-value 
+        {
             font-size: 42px;
             font-weight: 700;
             margin-bottom: 8px;
@@ -106,7 +127,8 @@
         .javascript-text { color: #4eb8ff; }
         .typescript-text { color: #ff0000; }
 
-        .progress-bar {
+        .progress-bar 
+        {
             height: 8px;
             background: #334155;
             border-radius: 9999px;
@@ -114,13 +136,18 @@
             overflow: hidden;
         }
 
-        .progress {
+        .progress 
+        {
             height: 100%;
             border-radius: 9999px;
         }
 
-        .footer {
-            margin-top: 32px;
+        .footer 
+        {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
             text-align: center;
             color: var(--muted);
             font-size: 14px;
@@ -193,6 +220,12 @@
 
     </div>
 
+    <div class="ManageFoldersBTN">
+        <button onclick="manFoldPopUp()" style="padding: 10px 20px; font-size: 16px; background: #2aa013; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Manage Folders
+        </button>
+    </div>
+
     <div class="footer">
         Soul — Know your code.
     </div>
@@ -201,15 +234,18 @@
         let bridge = null;
         let totalLines = 0;
 
-        new QWebChannel(qt.webChannelTransport, function(channel) {
+        new QWebChannel(qt.webChannelTransport, function(channel) 
+        {
             bridge = channel.objects.bridge;
 
             // Fetch all data
-            bridge.getUsername(function(username) {
+            bridge.getUsername(function(username) 
+            {
                 document.getElementById("username").innerText = username;
             });
 
-            bridge.getTotalLines(function(total) {
+            bridge.getTotalLines(function(total) 
+            {
                 totalLines = total;
                 document.getElementById("totalLines").innerText = total.toLocaleString();
 
@@ -220,40 +256,88 @@
                 updateBar('typescriptBar', parseInt(document.getElementById("typescriptLines").innerText) || 0);
             });
 
-            bridge.getPythonLines(function(py) {
+            bridge.getPythonLines(function(py) 
+            {
                 document.getElementById("pythonLines").innerText = py.toLocaleString();
                 updateBar('pythonBar', py);
             });
 
-            bridge.getJavaLines(function(java) {
+            bridge.getJavaLines(function(java) 
+            {
                 document.getElementById("javaLines").innerText = java.toLocaleString();
                 updateBar('javaBar', java);
             });
 
-            bridge.getAssemblyLines(function(asm) {
+            bridge.getAssemblyLines(function(asm) 
+            {
                 document.getElementById("assemblyLines").innerText = asm.toLocaleString();
                 updateBar('asmBar', asm);
             });
 
-            bridge.getJavaScriptLines(function(javascript) {
+            bridge.getJavaScriptLines(function(javascript) 
+            {
                 document.getElementById("javascriptLines").innerText = javascript.toLocaleString();
                 updateBar('javascriptBar', javascript)
             });
 
-            bridge.getTypeScriptLines(function(typescript) {
+            bridge.getTypeScriptLines(function(typescript) 
+            {
                 document.getElementById("typescriptLines").innerText = typescript.toLocaleString();
                 updateBar('typescriptBar', typescript)
             });
         });
 
-        function updateBar(barId, value) {
+        function updateBar(barId, value) 
+        {
             if (totalLines <= 0) return;
 
             const percentage = Math.min(100, Math.max(0, (value / totalLines) * 100));
             const bar = document.getElementById(barId);
-            if (bar) {
+            if (bar) 
+            {
                 bar.style.width = percentage + '%';
             }
+        }
+
+        function manFoldPopUp()
+        {
+            if (bridge)
+            {
+                bridge.manageFoldersPopUp();
+            }
+        }
+
+
+        function update() {
+            bridge.getTotalLines(function(total) {
+                totalLines = total;
+                document.getElementById("totalLines").innerText = total.toLocaleString();
+            });
+
+            bridge.getPythonLines(function(py) {
+                document.getElementById("pythonLines").innerText = py.toLocaleString();
+                updateBar("pythonBar", py);
+            });
+
+            bridge.getJavaLines(function(java) {
+                document.getElementById("javaLines").innerText = java.toLocaleString();
+                updateBar("javaBar", java);
+            });
+
+            bridge.getAssemblyLines(function(asm) {
+                document.getElementById("assemblyLines").innerText = asm.toLocaleString();
+                updateBar("asmBar", asm);
+            });
+
+            bridge.getJavaScriptLines(function(js) {
+                document.getElementById("javascriptLines").innerText = js.toLocaleString();
+                updateBar("javascriptBar", js);
+            });
+
+            bridge.getTypeScriptLines(function(ts) {
+                document.getElementById("typescriptLines").innerText = ts.toLocaleString();
+                updateBar("typescriptBar", ts);
+            });
         }
     </script>
 </body>
