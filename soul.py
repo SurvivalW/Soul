@@ -11,6 +11,7 @@ from PySide6.QtWebChannel import QWebChannel
 
 CACHE_FILE = Path(__file__).with_name(".soul_cache.json")
 
+main_window = None
 
 #========SetupBRIDGE==========================
 class SetupBridge(QObject):
@@ -126,13 +127,10 @@ class ManageFoldersBridge(QObject):
         except:
             locations = []
 
-        for loc in locations:
-            Soul.CalcStats(Soul(), loc)
+        global main_window
 
-        self.soul = Soul()
-        self.soul.view.page().loadFinished.connect(
-            lambda ok: self.soul.view.page().runJavaScript("update()")
-        )
+        if main_window is not None:
+            main_window.refresh()
 
         self.dialog.accept()
 
@@ -259,6 +257,25 @@ class Soul(QMainWindow):
                 print("Found file: ", item)
                 self.read(item)
 
+    def refresh(self):
+        Soul.PythonLines = 0
+        Soul.JavaLines = 0
+        Soul.AssemblyLines = 0
+        Soul.JavaScriptLines = 0
+        Soul.TypeScriptLines = 0
+        Soul.TotalLines = 0
+
+        try:
+            cache_data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
+            locations = cache_data.get("Locations", [])
+        except:
+            locations = []
+
+        for loc in locations:
+            self.CalcStats(loc)
+
+        self.view.page().runJavaScript("update()")
+
     def read(self, path: Path):
         if path.suffix in {".py", ".pyw"}:            # Python
             print("Reading Python file: ", path)
@@ -359,7 +376,6 @@ class Soul(QMainWindow):
                 )
             except:
                 return 0
-            
 
 class ManageFolders(QDialog):
     def __init__(self):
@@ -393,8 +409,10 @@ def run_soul():
         if result == 0:
             return
         
-    win = Soul()
-    win.show()
+    global main_window
+
+    main_window = Soul()
+    main_window.show()
 
 
     app.exec()

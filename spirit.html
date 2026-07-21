@@ -308,14 +308,36 @@
         }
 
 
-        function update()
-        {
-            bridge.getPythonLines();
-            bridge.getJavaLines();
-            bridge.getAssemblyLines();
-            bridge.getJavaScriptLines();
-            bridge.getTypeScriptLines();
-            bridge.getTotalLines();
+        function update() {
+            bridge.getTotalLines(function(total) {
+                totalLines = total;
+                document.getElementById("totalLines").innerText = total.toLocaleString();
+            });
+
+            bridge.getPythonLines(function(py) {
+                document.getElementById("pythonLines").innerText = py.toLocaleString();
+                updateBar("pythonBar", py);
+            });
+
+            bridge.getJavaLines(function(java) {
+                document.getElementById("javaLines").innerText = java.toLocaleString();
+                updateBar("javaBar", java);
+            });
+
+            bridge.getAssemblyLines(function(asm) {
+                document.getElementById("assemblyLines").innerText = asm.toLocaleString();
+                updateBar("asmBar", asm);
+            });
+
+            bridge.getJavaScriptLines(function(js) {
+                document.getElementById("javascriptLines").innerText = js.toLocaleString();
+                updateBar("javascriptBar", js);
+            });
+
+            bridge.getTypeScriptLines(function(ts) {
+                document.getElementById("typescriptLines").innerText = ts.toLocaleString();
+                updateBar("typescriptBar", ts);
+            });
         }
     </script>
 </body>
