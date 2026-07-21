@@ -44,8 +44,9 @@ Soul/
 
 ## Screenshots
 
-<img width="1485" height="898" alt="Screenshot from 2026-06-17 18-22-05" src="https://github.com/user-attachments/assets/44b2973d-1be0-4c97-bdad-e1ba0bf12321" />
+<img width="1498" height="1220" alt="Screenshot from 2026-07-21 16-39-43" src="https://github.com/user-attachments/assets/51be6361-4f3d-43f9-9efe-a9ffd3455dec" />
 
+<img width="1498" height="1220" alt="Screenshot from 2026-07-21 16-39-49" src="https://github.com/user-attachments/assets/d12195a7-5619-47dc-b7ea-94c95d873a20" />
 
 ---
 
